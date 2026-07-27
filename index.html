@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherSphere - Live Forecast</title>
+    
+    <link rel="icon" type="image/jpg" href="logo.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --primary-color: #3b82f6;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            --border-radius: 16px;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--text-muted);
+            background: var(--card-bg);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .search-container button {
+            border-radius: 30px;
+            padding: 0 20px;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .weather-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .current-weather { text-align: center; }
+        .temp-display { font-size: 3.5rem; font-weight: 700; margin: 10px 0; color: var(--primary-color); }
+        .weather-desc { font-size: 1.2rem; color: var(--text-muted); }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            background: rgba(0,0,0,0.03);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .forecast-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .forecast-card {
+            background: rgba(0,0,0,0.03);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .auth-form input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--text-muted);
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            margin-top: auto;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <div class="logo">WeatherSphere</div>
+            <div class="nav-actions">
+                <button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
+                <button class="btn btn-primary" id="authBtn" onclick="handleAuthButtonClick()">Login / Signup</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <form class="search-container" onsubmit="handleSearchSubmit(event)">
+            <input type="text" id="cityInput" placeholder="Search city (e.g. Abbottabad, Havelian, Islamabad)..." required>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+        </form>
+
+        <div class="weather-grid">
+            <div class="card current-weather">
+                <h2 id="cityName">Loading...</h2>
+                <p id="currentDate" style="color:var(--text-muted)"></p>
+                <div class="temp-display" id="temp">--°C</div>
+                <p class="weather-desc" id="weatherDesc">--</p>
+                
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <i class="fa-solid fa-droplet"></i>
+                        <p>Humidity</p>
+                        <strong id="humidity">--%</strong>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa-solid fa-wind"></i>
+                        <p>Wind Speed</p>
+                        <strong id="wind">-- km/h</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>7-Day Forecast</h3>
+                <div class="forecast-container" id="forecastContainer"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AUTH MODAL -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+            <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
+                <h3>Create Account / Login</h3>
+                <input type="text" id="signupName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Email Address" required>
+                <input type="text" id="signupCity" placeholder="Preferred City (e.g. Havelian)" required>
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 WeatherSphere</p>
+    </footer>
+
+    <script>
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkLoggedInUserStatus();
+        });
+
+        function handleSearchSubmit(e) {
+            e.preventDefault();
+            const city = document.getElementById('cityInput').value.trim();
+            if (city) fetchWeatherByCity(city);
+        }
+
+        function checkLoggedInUserStatus() {
+            const currentUserId = localStorage.getItem('currentLoggedInUser');
+            if (currentUserId) {
+                const userData = JSON.parse(localStorage.getItem('user_' + currentUserId));
+                if (userData && userData.city) {
+                    document.getElementById('authBtn').innerText = `Logout (${userData.name})`;
+                    document.getElementById('cityInput').value = userData.city;
+                    fetchWeatherByCity(userData.city);
+                    return;
+                }
+            }
+            document.getElementById('cityInput').value = "Abbottabad";
+            fetchWeatherByCity("Abbottabad");
+        }
+
+        // NO API KEY REQUIRED - Open-Meteo Geocoding & Weather API
+        async function fetchWeatherByCity(city) {
+            try {
+                document.getElementById('cityName').innerText = "Searching...";
+                
+                // 1. Get Coordinates
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+                const geoData = await geoRes.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    alert("City not found! Please check spelling.");
+                    document.getElementById('cityName').innerText = "City Not Found";
+                    return;
+                }
+
+                const location = geoData.results[0];
+                const { latitude, longitude, name, country } = location;
+
+                // 2. Fetch Weather Data
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`);
+                const weatherData = await weatherRes.json();
+
+                // UI Updates
+                document.getElementById('cityName').innerText = `${name}, ${country || ''}`;
+                document.getElementById('temp').innerText = `${Math.round(weatherData.current.temperature_2m)}°C`;
+                document.getElementById('humidity').innerText = `${weatherData.current.relative_humidity_2m}%`;
+                document.getElementById('wind').innerText = `${Math.round(weatherData.current.wind_speed_10m)} km/h`;
+                document.getElementById('weatherDesc').innerText = getWeatherCondition(weatherData.current.weather_code);
+
+                renderForecast(weatherData.daily);
+
+            } catch (err) {
+                console.error(err);
+                alert("Failed to fetch weather data. Please check connection.");
+            }
+        }
+
+        function renderForecast(daily) {
+            const container = document.getElementById('forecastContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < daily.time.length; i++) {
+                const date = new Date(daily.time[i]);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const maxTemp = Math.round(daily.temperature_2m_max[i]);
+
+                const card = document.createElement('div');
+                card.className = 'forecast-card';
+                card.innerHTML = `
+                    <h4>${dayName}</h4>
+                    <p style="font-size: 1.2rem; font-weight:bold; color:var(--primary-color); margin: 8px 0;">${maxTemp}°C</p>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">${getWeatherCondition(daily.weather_code[i])}</p>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function getWeatherCondition(code) {
+            if (code === 0) return "Clear Sky";
+            if (code <= 3) return "Partly Cloudy";
+            if (code <= 48) return "Foggy";
+            if (code <= 67) return "Rainy";
+            if (code <= 77) return "Snowy";
+            if (code <= 99) return "Thunderstorm";
+            return "Clear";
+        }
+
+        // Auth Modal & LocalStorage
+        function handleAuthButtonClick() {
+            if (localStorage.getItem('currentLoggedInUser')) {
+                localStorage.removeItem('currentLoggedInUser');
+                alert("Logged out!");
+                checkLoggedInUserStatus();
+            } else {
+                document.getElementById('authModal').style.display = 'flex';
+            }
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+            const city = document.getElementById('signupCity').value.trim();
+
+            localStorage.setItem('user_' + email, JSON.stringify({ name, email, city }));
+            localStorage.setItem('currentLoggedInUser', email);
+
+            alert(`Welcome ${name}!`);
+            closeAuthModal();
+            checkLoggedInUserStatus();
+        }
+
+        function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
+        function toggleTheme() {
+            document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? '' : 'dark');
+        }
+    </script>
+</body>
+</html>
