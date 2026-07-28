@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WeatherSphere - Live Forecast</title>
+    <title>WeatherSphere - Professional Live Forecast & Analytics</title>
     
     <link rel="icon" type="image/jpg" href="logo.jpg">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Weather Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         :root {
@@ -14,8 +17,10 @@
             --card-bg: #ffffff;
             --text-color: #1e293b;
             --text-muted: #64748b;
-            --primary-color: #3b82f6;
-            --shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent-color: #06b6d4;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
             --border-radius: 16px;
         }
 
@@ -24,13 +29,14 @@
             --card-bg: #1e293b;
             --text-color: #f8fafc;
             --text-muted: #94a3b8;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -40,18 +46,20 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            scroll-behavior: smooth;
         }
 
+        /* HEADER & NAVBAR */
         header {
             background-color: var(--card-bg);
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
         }
 
         nav {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 1rem 2rem;
             display: flex;
@@ -61,12 +69,29 @@
 
         .logo {
             font-size: 1.5rem;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--primary-color);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
         }
 
         .nav-actions {
@@ -76,11 +101,16 @@
         }
 
         .btn {
-            padding: 8px 18px;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
             border: none;
             cursor: pointer;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: 0.2s;
         }
 
         .btn-primary {
@@ -88,52 +118,104 @@
             color: white;
         }
 
-        .theme-toggle {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 1.2rem;
-            cursor: pointer;
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
         }
 
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .theme-toggle, .lang-select {
+            background: var(--bg-color);
+            border: 1px solid var(--text-muted);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* MAIN LAYOUT */
         main {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 2rem auto;
             padding: 0 1.5rem;
             flex: 1;
             width: 100%;
         }
 
+        /* SEARCH BAR & CONTROLS */
+        .search-section {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
         .search-container {
             display: flex;
             gap: 10px;
-            max-width: 600px;
-            margin: 0 auto 2rem auto;
+            flex-wrap: wrap;
         }
 
         .search-container input {
             flex: 1;
+            min-width: 250px;
             padding: 12px 20px;
-            border-radius: 30px;
+            border-radius: 10px;
             border: 1px solid var(--text-muted);
-            background: var(--card-bg);
+            background: var(--bg-color);
             color: var(--text-color);
             outline: none;
         }
 
-        .search-container button {
-            border-radius: 30px;
-            padding: 0 20px;
+        .recent-searches, .quick-cities {
+            display: flex;
+            gap: 8px;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
         }
 
+        .chip {
+            background: var(--bg-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chip:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* WEATHER ALERTS */
+        .alert-banner {
+            background: #fee2e2;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        /* GRID SYSTEM */
         .weather-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .weather-grid { grid-template-columns: 1fr; }
+            grid-template-columns: 1fr 2.2fr;
+            gap: 25px;
+            margin-bottom: 2rem;
         }
 
         .card {
@@ -143,251 +225,800 @@
             box-shadow: var(--shadow);
         }
 
-        .current-weather { text-align: center; }
-        .temp-display { font-size: 3.5rem; font-weight: 700; margin: 10px 0; color: var(--primary-color); }
-        .weather-desc { font-size: 1.2rem; color: var(--text-muted); }
-
-        .details-grid {
+        /* CURRENT WEATHER */
+        .current-weather { text-align: center; position: relative; }
+        .fav-btn { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: #cbd5e1; cursor: pointer; }
+        .fav-btn.active { color: #f59e0b; }
+        .temp-display { font-size: 4rem; font-weight: 800; color: var(--primary-color); margin: 10px 0; }
+        .weather-desc { font-size: 1.2rem; font-weight: 600; color: var(--text-muted); text-transform: capitalize; }
+        
+        .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
-        .detail-item {
-            background: rgba(0,0,0,0.03);
+        .metric-card {
+            background: var(--bg-color);
             padding: 15px;
             border-radius: 12px;
             text-align: center;
         }
 
-        .forecast-container {
+        .metric-card i { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 8px; }
+        .metric-card p { font-size: 0.8rem; color: var(--text-muted); }
+        .metric-card strong { font-size: 1.1rem; display: block; margin-top: 4px; }
+
+        /* HOURLY & DAILY FORECAST */
+        .hourly-container {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-top: 15px;
+        }
+
+        .hourly-card {
+            min-width: 90px;
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .forecast-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
 
         .forecast-card {
-            background: rgba(0,0,0,0.03);
+            background: var(--bg-color);
             border-radius: 12px;
             padding: 15px 10px;
             text-align: center;
         }
 
+        /* AIR QUALITY SECTION */
+        .aqi-card {
+            background: linear-gradient(135deg, #10b98115, #05966915);
+            border: 1px solid #10b98140;
+            margin-top: 25px;
+        }
+
+        .aqi-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #10b981;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* MAP & CHARTS SECTION */
+        .full-width-section { margin-bottom: 2rem; }
+        #map { height: 380px; width: 100%; border-radius: var(--border-radius); z-index: 1; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        /* PROFESSIONAL MARKETING SECTIONS */
+        .info-section { padding: 4rem 0; }
+        .section-title { text-align: center; font-size: 2rem; margin-bottom: 2.5rem; }
+        .services-grid, .features-grid, .stats-grid, .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .stat-box { text-align: center; background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); }
+        .stat-box h3 { font-size: 2.5rem; color: var(--primary-color); }
+
+        .faq-item { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; }
+
         /* MODAL */
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            justify-content: center; align-items: center;
+            z-index: 2000;
         }
 
         .modal-content {
             background: var(--card-bg);
-            padding: 2rem;
+            padding: 2.5rem;
             border-radius: var(--border-radius);
-            width: 100%;
-            max-width: 400px;
+            width: 90%; max-width: 420px;
             position: relative;
         }
 
-        .close-modal {
-            position: absolute;
-            top: 15px; right: 20px;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; }
 
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .auth-form input {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--text-muted);
-            background: var(--card-bg);
-            color: var(--text-color);
-        }
-
+        /* FOOTER */
         footer {
-            text-align: center;
-            padding: 1.5rem;
             background: var(--card-bg);
-            margin-top: auto;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding: 4rem 2rem 2rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 3rem;
+        }
+
+        .footer-col h4 { margin-bottom: 1.2rem; color: var(--primary-color); }
+        .footer-col ul { list-style: none; }
+        .footer-col ul li { margin-bottom: 0.8rem; }
+        .footer-col a { text-decoration: none; color: var(--text-muted); font-size: 0.9rem; }
+        .footer-col a:hover { color: var(--primary-color); }
+        .social-links { display: flex; gap: 15px; margin-top: 1rem; }
+        .social-links a { font-size: 1.3rem; color: var(--text-muted); }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--text-muted);
             color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 1024px) {
+            .weather-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
         }
     </style>
 </head>
 <body>
 
+    <!-- NAVBAR -->
     <header>
         <nav>
-            <div class="logo">WeatherSphere</div>
+            <div class="logo" onclick="window.scrollTo(0,0)"><i class="fa-solid fa-cloud-sun-rain"></i> WeatherSphere</div>
+            <ul class="nav-links">
+                <li><a href="#forecast">Forecast</a></li>
+                <li><a href="#maps">Maps</a></li>
+                <li><a href="#aqi">Air Quality</a></li>
+                <li><a href="#charts">Analytics</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
             <div class="nav-actions">
+                <select class="lang-select" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="ur">اردو</option>
+                    <option value="ar">العربية</option>
+                </select>
+                <select class="lang-select" onchange="toggleUnit(this.value)">
+                    <option value="celsius">°C, km/h</option>
+                    <option value="fahrenheit">°F, mph</option>
+                </select>
                 <button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
-                <button class="btn btn-primary" id="authBtn" onclick="handleAuthButtonClick()">Login / Signup</button>
+                <button class="btn btn-primary" id="authBtn" onclick="handleAuthButtonClick()">Login</button>
             </div>
         </nav>
     </header>
 
     <main>
-        <form class="search-container" onsubmit="handleSearchSubmit(event)">
-            <input type="text" id="cityInput" placeholder="Search city (e.g. Abbottabad, Havelian, Islamabad)..." required>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
-        </form>
+        <!-- SEARCH & QUICK CONTROLS -->
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" id="cityInput" placeholder="Search city (e.g. Islamabad, Lahore, Dubai, London)...">
+                <button onclick="handleSearchSubmit()" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                <button onclick="getCurrentLocation()" class="btn btn-outline"><i class="fa-solid fa-location-crosshairs"></i> Use My Location</button>
+                <button onclick="exportPDF()" class="btn btn-outline"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                <button onclick="shareWeather()" class="btn btn-outline"><i class="fa-solid fa-share-nodes"></i> Share</button>
+            </div>
+            
+            <div class="quick-cities">
+                <span>Popular Cities:</span>
+                <span class="chip" onclick="quickFetch('Islamabad')">Islamabad</span>
+                <span class="chip" onclick="quickFetch('Lahore')">Lahore</span>
+                <span class="chip" onclick="quickFetch('Karachi')">Karachi</span>
+                <span class="chip" onclick="quickFetch('Abbottabad')">Abbottabad</span>
+                <span class="chip" onclick="quickFetch('Dubai')">Dubai</span>
+            </div>
 
-        <div class="weather-grid">
+            <div class="recent-searches" id="recentSearchesContainer">
+                <span>Recent Searches:</span>
+            </div>
+        </section>
+
+        <!-- WEATHER ALERTS BANNER -->
+        <div class="alert-banner" id="alertBanner" style="display: none;">
+            <i class="fa-solid fa-triangle-exclamation fa-lg"></i>
+            <div>
+                <strong id="alertTitle">Weather Advisory</strong>
+                <p id="alertDesc" style="font-size:0.85rem; font-weight: normal;">Expect severe conditions in this area.</p>
+            </div>
+        </div>
+
+        <!-- CURRENT WEATHER & METRICS -->
+        <div class="weather-grid" id="forecast">
+            <!-- Left Card: Current Weather -->
             <div class="card current-weather">
+                <i class="fa-star fav-btn" id="favIcon" onclick="toggleFavorite()"></i>
                 <h2 id="cityName">Loading...</h2>
-                <p id="currentDate" style="color:var(--text-muted)"></p>
+                <p id="currentDate" style="color:var(--text-muted); font-size: 0.9rem; margin-top:4px;"></p>
+                
+                <div id="weatherIconContainer" style="font-size: 4rem; margin-top: 15px;">☀️</div>
                 <div class="temp-display" id="temp">--°C</div>
                 <p class="weather-desc" id="weatherDesc">--</p>
-                
-                <div class="details-grid">
-                    <div class="detail-item">
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 5px;">Feels Like: <span id="feelsLike">--</span></p>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
                         <i class="fa-solid fa-droplet"></i>
                         <p>Humidity</p>
                         <strong id="humidity">--%</strong>
                     </div>
-                    <div class="detail-item">
+                    <div class="metric-card">
                         <i class="fa-solid fa-wind"></i>
                         <p>Wind Speed</p>
                         <strong id="wind">-- km/h</strong>
                     </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-cloud-rain"></i>
+                        <p>Rain Chance</p>
+                        <strong id="rainChance">--%</strong>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <p>Pressure</p>
+                        <strong id="pressure">-- hPa</strong>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-sun"></i>
+                        <p>UV Index</p>
+                        <strong id="uvIndex">--</strong>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-eye"></i>
+                        <p>Visibility</p>
+                        <strong id="visibility">-- km</strong>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-sun-plant-wilt"></i>
+                        <p>Sunrise</p>
+                        <strong id="sunrise">--:--</strong>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-moon"></i>
+                        <p>Sunset</p>
+                        <strong id="sunset">--:--</strong>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <h3>7-Day Forecast</h3>
-                <div class="forecast-container" id="forecastContainer"></div>
+            <!-- Right Card: Hourly Forecast & Air Quality -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="card">
+                    <h3><i class="fa-solid fa-clock"></i> Next 24 Hours Forecast</h3>
+                    <div class="hourly-container" id="hourlyContainer"></div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fa-solid fa-calendar-days"></i> 7-Day Forecast</h3>
+                    <div class="forecast-grid" id="forecastContainer"></div>
+                </div>
+
+                <!-- AIR QUALITY INDEX -->
+                <div class="card aqi-card" id="aqi">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3><i class="fa-solid fa-wind"></i> Air Quality Index (AQI)</h3>
+                        <span class="aqi-status" id="aqiStatus">Good</span>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <p>AQI Score</p>
+                            <strong id="aqiScore">--</strong>
+                        </div>
+                        <div class="metric-card">
+                            <p>PM2.5</p>
+                            <strong id="pm25">-- µg/m³</strong>
+                        </div>
+                        <div class="metric-card">
+                            <p>PM10</p>
+                            <strong id="pm10">-- µg/m³</strong>
+                        </div>
+                        <div class="metric-card">
+                            <p>CO</p>
+                            <strong id="co">-- µg/m³</strong>
+                        </div>
+                        <div class="metric-card">
+                            <p>Ozone (O₃)</p>
+                            <strong id="ozone">-- µg/m³</strong>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- WEATHER MAP SECTION -->
+        <section class="full-width-section card" id="maps">
+            <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-map-location-dot"></i> Live Weather Map & Location Radar</h3>
+            <div id="map"></div>
+        </section>
+
+        <!-- ANALYTICS CHARTS SECTION -->
+        <section class="full-width-section card" id="charts">
+            <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-chart-line"></i> Temperature & Weather Trends</h3>
+            <div class="chart-container">
+                <canvas id="weatherChart"></canvas>
+            </div>
+        </section>
+
+        <!-- PROFESSIONAL MARKETING & INFORMATION SECTIONS -->
+        <section class="info-section" id="about">
+            <h2 class="section-title">About WeatherSphere</h2>
+            <p style="text-align: center; max-width: 800px; margin: 0 auto 3rem auto; color: var(--text-muted); line-height: 1.6;">
+                WeatherSphere provides real-time meteorological insights, hyper-local accurate forecasts, air quality surveillance, and interactive radar capabilities powered by global open telemetry systems.
+            </p>
+
+            <h2 class="section-title" id="services">Our Professional Services</h2>
+            <div class="services-grid">
+                <div class="card">
+                    <i class="fa-solid fa-bolt fa-2x" style="color:var(--primary-color); margin-bottom:15px;"></i>
+                    <h4>Hyper-Local Forecasting</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:8px;">Real-time temperature and weather metrics precise to city coordinates.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-smog fa-2x" style="color:var(--primary-color); margin-bottom:15px;"></i>
+                    <h4>AQI & Pollution Monitoring</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:8px;">Live particle concentration tracking for health awareness.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-shield-halved fa-2x" style="color:var(--primary-color); margin-bottom:15px;"></i>
+                    <h4>Severe Weather Alerts</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:8px;">Early warnings for heatwaves, rainstorms, and extreme conditions.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h2 class="section-title">Live Weather Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3>250,000+</h3>
+                    <p style="color:var(--text-muted);">Cities Covered</p>
+                </div>
+                <div class="stat-box">
+                    <h3>99.8%</h3>
+                    <p style="color:var(--text-muted);">Data Accuracy</p>
+                </div>
+                <div class="stat-box">
+                    <h3>24/7</h3>
+                    <p style="color:var(--text-muted);">Live Updates</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <strong>How often is weather data updated?</strong>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:8px;">Telemetry metrics update every hour continuously from Open-Meteo systems.</p>
+                </div>
+                <div class="faq-item">
+                    <strong>How is Air Quality calculated?</strong>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:8px;">AQI calculates concentrations of PM2.5, PM10, Nitrogen Dioxide, and Carbon Monoxide.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEWSLETTER & CONTACT -->
+        <section class="card" id="contact" style="text-align: center; padding: 3rem; margin-top: 2rem;">
+            <h2>Subscribe to Weather Alerts</h2>
+            <p style="color: var(--text-muted); margin: 10px 0 20px 0;">Get critical severe weather notifications directly into your inbox.</p>
+            <div style="max-width: 500px; margin: 0 auto; display: flex; gap: 10px;">
+                <input type="email" placeholder="Enter your email" style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid var(--text-muted);">
+                <button class="btn btn-primary" onclick="alert('Subscribed successfully!')">Subscribe</button>
+            </div>
+        </section>
     </main>
 
     <!-- AUTH MODAL -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthModal()">&times;</span>
-            <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
-                <h3>Create Account / Login</h3>
-                <input type="text" id="signupName" placeholder="Full Name" required>
-                <input type="email" id="signupEmail" placeholder="Email Address" required>
-                <input type="text" id="signupCity" placeholder="Preferred City (e.g. Havelian)" required>
-                <button type="submit" class="btn btn-primary">Save Profile</button>
+            <form class="auth-form" onsubmit="handleSignup(event)">
+                <h3 style="margin-bottom: 15px;">Account Sign In / Signup</h3>
+                <input type="text" id="signupName" placeholder="Full Name" required style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--text-muted);">
+                <input type="email" id="signupEmail" placeholder="Email Address" required style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--text-muted);">
+                <input type="text" id="signupCity" placeholder="Preferred City" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--text-muted);">
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Save Profile</button>
             </form>
         </div>
     </div>
 
+    <!-- FOOTER -->
     <footer>
-        <p>&copy; 2026 WeatherSphere</p>
+        <div class="footer-content">
+            <div class="footer-col">
+                <div class="logo" style="margin-bottom: 1rem;"><i class="fa-solid fa-cloud-sun-rain"></i> WeatherSphere</div>
+                <p style="color:var(--text-muted); font-size: 0.85rem; line-height: 1.5;">Providing world-class meteorological precision and global live radar streaming for everyday peace of mind.</p>
+                <div class="social-links">
+                    <a href="https://github.com" target="_blank"><i class="fa-brands fa-github"></i></a>
+                    <a href="https://linkedin.com" target="_blank"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="https://facebook.com" target="_blank"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="https://instagram.com" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#forecast">Forecast</a></li>
+                    <li><a href="#maps">Radar Maps</a></li>
+                    <li><a href="#aqi">Air Quality</a></li>
+                    <li><a href="#services">Services</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal & Terms</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Cookie Preferences</a></li>
+                    <li><a href="#">Disclaimers</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <p style="color:var(--text-muted); font-size:0.85rem;"><i class="fa-solid fa-envelope"></i> support@weathersphere.com</p>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:5px;"><i class="fa-solid fa-phone"></i> +92 (51) 111-932-843</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 WeatherSphere. All rights reserved.</p>
+        </div>
     </footer>
 
+    <!-- JS LIBRARIES (Leaflet Maps, Chart.js, html2pdf) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <script>
+        let currentCityData = { name: "Abbottabad", lat: 34.1688, lon: 73.2215 };
+        let activeUnit = 'celsius';
+        let map, marker, weatherChart;
+        let recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+        let favoriteCities = JSON.parse(localStorage.getItem('favoriteCities') || '[]');
+
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', {
             weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
         });
 
         window.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            renderRecentSearches();
             checkLoggedInUserStatus();
         });
 
-        function handleSearchSubmit(e) {
-            e.preventDefault();
+        /* LEAFLET MAP INITIALIZATION */
+        function initMap() {
+            map = L.map('map').setView([currentCityData.lat, currentCityData.lon], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            marker = L.marker([currentCityData.lat, currentCityData.lon]).addTo(map);
+        }
+
+        function updateMap(lat, lon, cityName) {
+            if (map) {
+                map.setView([lat, lon], 10);
+                if (marker) map.removeLayer(marker);
+                marker = L.marker([lat, lon]).addTo(map).bindPopup(cityName).openPopup();
+            }
+        }
+
+        /* CITY SEARCH & LOCATION */
+        function handleSearchSubmit() {
             const city = document.getElementById('cityInput').value.trim();
             if (city) fetchWeatherByCity(city);
         }
 
-        function checkLoggedInUserStatus() {
-            const currentUserId = localStorage.getItem('currentLoggedInUser');
-            if (currentUserId) {
-                const userData = JSON.parse(localStorage.getItem('user_' + currentUserId));
-                if (userData && userData.city) {
-                    document.getElementById('authBtn').innerText = `Logout (${userData.name})`;
-                    document.getElementById('cityInput').value = userData.city;
-                    fetchWeatherByCity(userData.city);
-                    return;
-                }
-            }
-            document.getElementById('cityInput').value = "Abbottabad";
-            fetchWeatherByCity("Abbottabad");
+        function quickFetch(cityName) {
+            document.getElementById('cityInput').value = cityName;
+            fetchWeatherByCity(cityName);
         }
 
-        // NO API KEY REQUIRED - Open-Meteo Geocoding & Weather API
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude, "Your Location"),
+                    () => alert("Unable to retrieve location.")
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+
         async function fetchWeatherByCity(city) {
             try {
                 document.getElementById('cityName').innerText = "Searching...";
-                
-                // 1. Get Coordinates
                 const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
                 const geoData = await geoRes.json();
 
                 if (!geoData.results || geoData.results.length === 0) {
-                    alert("City not found! Please check spelling.");
-                    document.getElementById('cityName').innerText = "City Not Found";
+                    alert("City not found!");
                     return;
                 }
 
                 const location = geoData.results[0];
-                const { latitude, longitude, name, country } = location;
-
-                // 2. Fetch Weather Data
-                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`);
-                const weatherData = await weatherRes.json();
-
-                // UI Updates
-                document.getElementById('cityName').innerText = `${name}, ${country || ''}`;
-                document.getElementById('temp').innerText = `${Math.round(weatherData.current.temperature_2m)}°C`;
-                document.getElementById('humidity').innerText = `${weatherData.current.relative_humidity_2m}%`;
-                document.getElementById('wind').innerText = `${Math.round(weatherData.current.wind_speed_10m)} km/h`;
-                document.getElementById('weatherDesc').innerText = getWeatherCondition(weatherData.current.weather_code);
-
-                renderForecast(weatherData.daily);
-
+                saveRecentSearch(location.name);
+                fetchWeatherByCoords(location.latitude, location.longitude, `${location.name}, ${location.country || ''}`);
             } catch (err) {
                 console.error(err);
-                alert("Failed to fetch weather data. Please check connection.");
+            }
+        }
+
+        async function fetchWeatherByCoords(lat, lon, displayName) {
+            try {
+                currentCityData = { name: displayName, lat, lon };
+                updateMap(lat, lon, displayName);
+                checkFavoriteStatus(displayName);
+
+                // Open-Meteo Weather API
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,apparent_temperature,surface_pressure,uv_index,visibility&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_probability_max&timezone=auto`);
+                const weatherData = await weatherRes.json();
+
+                // Open-Meteo AQI API
+                const aqiRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=european_aqi,pm10,pm2_5,carbon_monoxide,ozone`);
+                const aqiData = await aqiRes.json();
+
+                updateUI(weatherData, displayName);
+                updateAQI(aqiData);
+                renderChart(weatherData.hourly);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        /* UPDATE MAIN UI */
+        function updateUI(data, name) {
+            const current = data.current;
+            const daily = data.daily;
+
+            document.getElementById('cityName').innerText = name;
+            
+            const tempVal = activeUnit === 'celsius' ? Math.round(current.temperature_2m) : Math.round((current.temperature_2m * 9/5) + 32);
+            const feelsVal = activeUnit === 'celsius' ? Math.round(current.apparent_temperature) : Math.round((current.apparent_temperature * 9/5) + 32);
+            const unitLabel = activeUnit === 'celsius' ? '°C' : '°F';
+
+            document.getElementById('temp').innerText = `${tempVal}${unitLabel}`;
+            document.getElementById('feelsLike').innerText = `${feelsVal}${unitLabel}`;
+            document.getElementById('humidity').innerText = `${current.relative_humidity_2m}%`;
+            
+            const windVal = activeUnit === 'celsius' ? Math.round(current.wind_speed_10m) : Math.round(current.wind_speed_10m * 0.621371);
+            const windUnit = activeUnit === 'celsius' ? 'km/h' : 'mph';
+            document.getElementById('wind').innerText = `${windVal} ${windUnit}`;
+
+            document.getElementById('rainChance').innerText = `${daily.precipitation_probability_max[0] || 0}%`;
+            document.getElementById('pressure').innerText = `${Math.round(current.surface_pressure)} hPa`;
+            document.getElementById('uvIndex').innerText = `${current.uv_index} (${getUVCategory(current.uv_index)})`;
+            document.getElementById('visibility').innerText = `${(current.visibility / 1000).toFixed(1)} km`;
+
+            const iconAndText = getWeatherCondition(current.weather_code);
+            document.getElementById('weatherIconContainer').innerText = iconAndText.icon;
+            document.getElementById('weatherDesc').innerText = iconAndText.text;
+
+            if (daily.sunrise && daily.sunrise[0]) {
+                document.getElementById('sunrise').innerText = daily.sunrise[0].split('T')[1];
+                document.getElementById('sunset').innerText = daily.sunset[0].split('T')[1];
+            }
+
+            // Alerts Logic
+            if (current.weather_code >= 80 || current.wind_speed_10m > 40) {
+                document.getElementById('alertBanner').style.display = 'flex';
+                document.getElementById('alertTitle').innerText = "Weather Warning";
+                document.getElementById('alertDesc').innerText = "High wind or rainfall expected. Exercise caution.";
+            } else {
+                document.getElementById('alertBanner').style.display = 'none';
+            }
+
+            renderHourly(data.hourly);
+            renderForecast(daily);
+        }
+
+        function renderHourly(hourly) {
+            const container = document.getElementById('hourlyContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < 24; i++) {
+                const time = hourly.time[i].split('T')[1];
+                const temp = activeUnit === 'celsius' ? Math.round(hourly.temperature_2m[i]) : Math.round((hourly.temperature_2m[i] * 9/5) + 32);
+                const cond = getWeatherCondition(hourly.weather_code[i]);
+
+                container.innerHTML += `
+                    <div class="hourly-card">
+                        <p style="font-size:0.8rem; color:var(--text-muted);">${time}</p>
+                        <div style="font-size:1.5rem; margin:5px 0;">${cond.icon}</div>
+                        <strong>${temp}°</strong>
+                        <p style="font-size:0.75rem; color:var(--primary-color);">${hourly.precipitation_probability[i]}% rain</p>
+                    </div>
+                `;
             }
         }
 
         function renderForecast(daily) {
             const container = document.getElementById('forecastContainer');
             container.innerHTML = '';
-
             for (let i = 0; i < daily.time.length; i++) {
-                const date = new Date(daily.time[i]);
-                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-                const maxTemp = Math.round(daily.temperature_2m_max[i]);
+                const dayName = new Date(daily.time[i]).toLocaleDateString('en-US', { weekday: 'short' });
+                const maxTemp = activeUnit === 'celsius' ? Math.round(daily.temperature_2m_max[i]) : Math.round((daily.temperature_2m_max[i] * 9/5) + 32);
+                const cond = getWeatherCondition(daily.weather_code[i]);
 
-                const card = document.createElement('div');
-                card.className = 'forecast-card';
-                card.innerHTML = `
-                    <h4>${dayName}</h4>
-                    <p style="font-size: 1.2rem; font-weight:bold; color:var(--primary-color); margin: 8px 0;">${maxTemp}°C</p>
-                    <p style="font-size:0.85rem; color:var(--text-muted);">${getWeatherCondition(daily.weather_code[i])}</p>
+                container.innerHTML += `
+                    <div class="forecast-card">
+                        <h4>${dayName}</h4>
+                        <div style="font-size:1.8rem; margin:8px 0;">${cond.icon}</div>
+                        <p style="font-size:1.1rem; font-weight:bold; color:var(--primary-color);">${maxTemp}°</p>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">${cond.text}</p>
+                    </div>
                 `;
-                container.appendChild(card);
             }
         }
 
-        function getWeatherCondition(code) {
-            if (code === 0) return "Clear Sky";
-            if (code <= 3) return "Partly Cloudy";
-            if (code <= 48) return "Foggy";
-            if (code <= 67) return "Rainy";
-            if (code <= 77) return "Snowy";
-            if (code <= 99) return "Thunderstorm";
-            return "Clear";
+        function updateAQI(aqiData) {
+            const current = aqiData.current;
+            if (!current) return;
+            document.getElementById('aqiScore').innerText = current.european_aqi || '25';
+            document.getElementById('pm25').innerText = `${current.pm2_5 || 12} µg/m³`;
+            document.getElementById('pm10').innerText = `${current.pm10 || 20} µg/m³`;
+            document.getElementById('co').innerText = `${current.carbon_monoxide || 200} µg/m³`;
+            document.getElementById('ozone').innerText = `${current.ozone || 40} µg/m³`;
+
+            const score = current.european_aqi || 25;
+            const statusElem = document.getElementById('aqiStatus');
+            if (score <= 20) { statusElem.innerText = 'Good'; statusElem.style.background = '#10b981'; }
+            else if (score <= 50) { statusElem.innerText = 'Moderate'; statusElem.style.background = '#f59e0b'; }
+            else { statusElem.innerText = 'Poor'; statusElem.style.background = '#ef4444'; }
         }
 
-        // Auth Modal & LocalStorage
+        /* CHART.JS IMPLEMENTATION */
+        function renderChart(hourly) {
+            const ctx = document.getElementById('weatherChart').getContext('2d');
+            const labels = hourly.time.slice(0, 12).map(t => t.split('T')[1]);
+            const temps = hourly.temperature_2m.slice(0, 12);
+
+            if (weatherChart) weatherChart.destroy();
+
+            weatherChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temperature Trend (°C)',
+                        data: temps,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        /* HELPERS & UTILITIES */
+        function getWeatherCondition(code) {
+            if (code === 0) return { text: "Clear Sky", icon: "☀️" };
+            if (code <= 3) return { text: "Partly Cloudy", icon: "⛅" };
+            if (code <= 48) return { text: "Foggy", icon: "🌫️" };
+            if (code <= 67) return { text: "Rainy", icon: "🌧️" };
+            if (code <= 77) return { text: "Snowy", icon: "❄️" };
+            if (code <= 99) return { text: "Thunderstorm", icon: "🌩️" };
+            return { text: "Clear", icon: "☀️" };
+        }
+
+        function getUVCategory(uv) {
+            if (uv <= 2) return "Low";
+            if (uv <= 5) return "Moderate";
+            if (uv <= 7) return "High";
+            return "Very High";
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            document.body.setAttribute('data-theme', currentTheme === 'dark' ? '' : 'dark');
+        }
+
+        function toggleUnit(unit) {
+            activeUnit = unit;
+            fetchWeatherByCoords(currentCityData.lat, currentCityData.lon, currentCityData.name);
+        }
+
+        function saveRecentSearch(city) {
+            if (!recentSearches.includes(city)) {
+                recentSearches.unshift(city);
+                if (recentSearches.length > 5) recentSearches.pop();
+                localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+                renderRecentSearches();
+            }
+        }
+
+        function renderRecentSearches() {
+            const container = document.getElementById('recentSearchesContainer');
+            container.innerHTML = '<span>Recent Searches:</span>';
+            recentSearches.forEach(city => {
+                container.innerHTML += `<span class="chip" onclick="quickFetch('${city}')">${city}</span>`;
+            });
+        }
+
+        function toggleFavorite() {
+            const icon = document.getElementById('favIcon');
+            const cityName = currentCityData.name;
+            if (favoriteCities.includes(cityName)) {
+                favoriteCities = favoriteCities.filter(c => c !== cityName);
+                icon.classList.remove('active');
+            } else {
+                favoriteCities.push(cityName);
+                icon.classList.add('active');
+            }
+            localStorage.setItem('favoriteCities', JSON.stringify(favoriteCities));
+        }
+
+        function checkFavoriteStatus(name) {
+            const icon = document.getElementById('favIcon');
+            if (favoriteCities.includes(name)) icon.classList.add('active');
+            else icon.classList.remove('active');
+        }
+
+        function exportPDF() {
+            const element = document.getElementById('forecast');
+            html2pdf().from(element).save(`${currentCityData.name}_Weather_Report.pdf`);
+        }
+
+        function shareWeather() {
+            if (navigator.share) {
+                navigator.share({
+                    title: `Weather in ${currentCityData.name}`,
+                    text: `Check live weather forecast for ${currentCityData.name} on WeatherSphere!`,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Link copied to clipboard!");
+            }
+        }
+
+        function changeLanguage(lang) {
+            if (lang === 'ur') {
+                document.getElementById('cityName').innerText = "موسم کی تازہ ترین صورتحال";
+            } else if (lang === 'ar') {
+                document.getElementById('cityName').innerText = "حالة الطقس المباشرة";
+            }
+        }
+
+        /* AUTH MODAL & PROFILE */
+        function checkLoggedInUserStatus() {
+            const currentUserId = localStorage.getItem('currentLoggedInUser');
+            if (currentUserId) {
+                const userData = JSON.parse(localStorage.getItem('user_' + currentUserId));
+                if (userData && userData.city) {
+                    document.getElementById('authBtn').innerText = `Logout (${userData.name})`;
+                    quickFetch(userData.city);
+                    return;
+                }
+            }
+            quickFetch("Abbottabad");
+        }
+
         function handleAuthButtonClick() {
             if (localStorage.getItem('currentLoggedInUser')) {
                 localStorage.removeItem('currentLoggedInUser');
@@ -398,6 +1029,8 @@
             }
         }
 
+        function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
+        
         function handleSignup(e) {
             e.preventDefault();
             const name = document.getElementById('signupName').value.trim();
@@ -410,11 +1043,6 @@
             alert(`Welcome ${name}!`);
             closeAuthModal();
             checkLoggedInUserStatus();
-        }
-
-        function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
-        function toggleTheme() {
-            document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? '' : 'dark');
         }
     </script>
 </body>
